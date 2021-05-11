@@ -2,9 +2,12 @@ import io
 from PIL import Image
 from flask import Flask, request
 from evaluator import Model
+from multiprocessing.pool import ThreadPool
 
 app = Flask(__name__)
 model = Model()
+
+workers = ThreadPool(200)
 
 @app.route('/', methods=['POST'])
 def predict():
@@ -26,9 +29,9 @@ def predict():
         if len(images) == 0:
             raise Exception('No images')
         
-        results = model.predict(images)
+        results = workers.map(model.predict, [images])
 
-        return results, 200
+        return results[0], 200
     except Exception as e:
         print('Exception: ', str(e))
         return 'Error processing image', 500
