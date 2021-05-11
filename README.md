@@ -8,6 +8,7 @@
 ## Setup
 
 * Locate and replace the updated model in `model/best.pt` if needed.
+* Upgrade pip3 like `pip3 install --upgrade pip`.
 * Install `virtualenv`.
 * Execute `virtualenv env` in the root folder.
 * Activate your environment
