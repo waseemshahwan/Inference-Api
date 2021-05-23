@@ -3,13 +3,12 @@
 ## TODO
 
 - [ ] Add autoscale configs
-- [ ] Add Dockerfile in here
 - [ ] Improve for crosswalks
 - [ ] Add rest of CAPTCHA classifications
 
 ## Setup
 
-* Run Dockerfile (not yet placed here as of 05/23)
+* Run Dockerfile
 
 ## Usage
 
