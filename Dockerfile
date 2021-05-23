@@ -46,7 +46,11 @@ RUN make
 RUN apt install python3-libnvinfer=7.0.0-1+cuda10.0
 RUN apt install python3-libnvinfer-dev=7.0.0-1+cuda10.0
 
+RUN pip3 install flask
+
 COPY . /app
 WORKDIR /app
 
-CMD /tensorrtx/yolov5/build/yolov5 -s /best.wts yolov5s.engine s && python3 app.py --host=0.0.0.0 --port=5000 --engine=yolov5s.engine --plugins=libmyplugins.so
+RUN cp /tensorrtx/yolov5/build/libmyplugins.so /app/libmyplugins.so
+
+CMD /tensorrtx/yolov5/build/yolov5 -s /best.wts yolov5s.engine s && python3 app.py --host=0.0.0.0 --port=5000 --engine=./yolov5s.engine --plugins=./libmyplugins.so
