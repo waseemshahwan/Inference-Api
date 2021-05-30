@@ -53,4 +53,18 @@ WORKDIR /app
 
 RUN cp /tensorrtx/yolov5/build/libmyplugins.so /app/libmyplugins.so
 
-CMD /tensorrtx/yolov5/build/yolov5 -s /best.wts yolov5s.engine s && python3 app.py --host=0.0.0.0 --port=5000 --engine=./yolov5s.engine --plugins=./libmyplugins.so
+RUN apt update
+RUN apt install -y libc6 libstdc++6 wget
+WORKDIR /root
+RUN wget https://github.com/cdr/code-server/releases/download/v3.10.2/code-server-3.10.2-linux-amd64.tar.gz
+RUN tar xvf code-server-3.10.2-linux-amd64.tar.gz
+RUN mkdir /usr/lib/code-server
+RUN cp -r /root/code-server-3.10.2-linux-amd64/* /usr/lib/code-server/
+RUN ln -s /usr/lib/code-server/code-server /usr/bin/code-server
+RUN mkdir /var/lib/code-server
+
+EXPOSE 8081
+CMD PASSWORD=password /usr/bin/code-server --bind-addr 0.0.0.0:8081 --user-data-dir /var/lib/code-server --auth password
+
+# CMD /tensorrtx/yolov5/build/yolov5 -s /best.wts yolov5s.engine s && python3 app.py --host=0.0.0.0 --port=5000 --engine=./yolov5s.engine --plugins=./libmyplugins.so
+# CMD tail -f /dev/null

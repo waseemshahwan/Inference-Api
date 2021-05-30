@@ -1,19 +1,8 @@
-import ctypes
-import os
-import shutil
-import random
-import sys
-import threading
-import time
-import cv2
+import ctypes, os, shutil, random, sys, threading, time, cv2, torch, torchvision, io, json
 import numpy as np
 import pycuda.autoinit
 import pycuda.driver as cuda
 import tensorrt as trt
-import torch
-import torchvision
-import io
-import json
 from PIL import Image
 from flask import Flask, request
 # from multiprocessing.pool import ThreadPool
@@ -30,8 +19,8 @@ args = parser.parse_args()
 
 print(args)
 
-CONF_THRESH = 0.5
-IOU_THRESHOLD = 0.4
+CONF_THRESH = 0.3
+IOU_THRESHOLD = 0.2
 
 app = Flask(__name__)
 
@@ -245,7 +234,7 @@ class YoLov5TRT(object):
         output = host_outputs[0]
         results = []
         # Do postprocess
-        for i in range(self.batch_size):
+        for i in range(len(images)):
             result_boxes, result_scores, result_classid = self.post_process(
                 output[i * 6001: (i + 1) * 6001], batch_origin_h[i], batch_origin_w[i]
             )
@@ -416,16 +405,23 @@ class warmUpThread(threading.Thread):
 @app.route('/', methods=['POST'])
 def predict():
     try:
+        image_ids = []
         images_data = []
         if len(request.files) > 0:
             for key in request.files:
                 images_data.append(request.files[key])
+                image_ids.append(key)
         elif len(request.form) > 0:
             for key in request.form:
-                images_data.append(request.files[key])
+                images_data.append(request.form[key])
+                image_ids.append(key)
         else:
             images_data[0] = io.BytesIO(request.get_data())
+            image_ids.append('image')
         
+        if len(images_data) > yolov5_wrapper.batch_size:
+            return 'No more than ' + str(yolov5_wrapper.batch_size) + ' images per request', 400
+
         images = []
         for image_data in images_data:
             a = Image.open(image_data).convert('RGB')
@@ -439,7 +435,7 @@ def predict():
         if len(images) == 0:
             raise Exception('No images')
 
-        return json.dumps({ 'results': results, 'elapsed': time }), 200
+        return json.dumps({ 'results': list(map(lambda x: { 'boxes': x[1], 'id': image_ids[x[0]] }, enumerate(results))), 'elapsed': time }), 200
     except Exception as e:
         print('Exception: ', str(e))
         return 'Error processing image', 500
