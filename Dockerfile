@@ -32,9 +32,11 @@ RUN cp /tensorrtx/yolov5/gen_wts.py ~/yolov5/gen_wts.py
 RUN cd ~/yolov5 && python3 gen_wts.py /best.pt
 RUN cp /best.wts /tensorrtx/yolov5/best.wts
 
+ARG BATCH_SIZE
 WORKDIR /tensorrtx/yolov5
 RUN sed 's/int CLASS_NUM = 80;/int CLASS_NUM = 8;/g' /tensorrtx/yolov5/yololayer.h > /tensorrtx/yolov5/yololayer_1.h
 RUN sed "s/#define BATCH_SIZE 1/#define BATCH_SIZE $BATCH_SIZE/g" /tensorrtx/yolov5/yolov5.cpp > /tensorrtx/yolov5/yolov5_1.cpp
+RUN cat yolov5_1.cpp
 RUN mv yololayer_1.h yololayer.h
 RUN mv /tensorrtx/yolov5/yolov5_1.cpp /tensorrtx/yolov5/yolov5.cpp
 
@@ -69,5 +71,5 @@ RUN cp /tensorrtx/yolov5/build/libmyplugins.so /app/libmyplugins.so
 # EXPOSE 8081
 # CMD PASSWORD=password /usr/bin/code-server --bind-addr 0.0.0.0:8081 --user-data-dir /var/lib/code-server --auth password
 
-CMD /tensorrtx/yolov5/build/yolov5 -s /best.wts yolov5s.engine s && python3 app.py --host=0.0.0.0 --port=5000 --engine=./yolov5s.engine --plugins=./libmyplugins.so
-# CMD tail -f /dev/null
+# CMD /tensorrtx/yolov5/build/yolov5 -s /best.wts yolov5s.engine s && python3 app.py --host=0.0.0.0 --port=5000 --engine=./yolov5s.engine --plugins=./libmyplugins.so
+CMD tail -f /dev/null

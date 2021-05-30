@@ -440,7 +440,7 @@ def predict():
         print('Exception: ', str(e))
         return 'Error processing image', 500
 
-if __name__ == "__main__":
+if True:
     # load custom plugins
     PLUGIN_LIBRARY = args.plugins
     engine_file_path = args.engine
@@ -459,7 +459,7 @@ if __name__ == "__main__":
             thread1.start()
             thread1.join()
         
-        app.run(host=args.host, port=args.port)
+        #app.run(host=args.host, port=args.port)
     finally:
         # destroy the instance
-        yolov5_wrapper.destroy()
+        pass #yolov5_wrapper.destroy()
